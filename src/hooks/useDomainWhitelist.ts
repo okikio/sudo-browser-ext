@@ -27,7 +27,9 @@ export function useToggleWhitelistDomain(domain: string | null) {
   const { domainWhitelist, addDomain, removeDomain } = useDomainWhitelist();
   const isWhitelisted = domainWhitelist.includes(domain ?? '');
   const { grantPermission } = usePermission();
-  const iconPath = (chrome || browser).runtime.getURL(isWhitelisted ? 'assets/active.png' : 'assets/inactive.png');
+  const iconPath = (chrome || browser).runtime.getURL(
+    isWhitelisted ? 'src/assets/active.png' : 'src/assets/inactive.png',
+  );
 
   (chrome || browser).action.setIcon({
     path: iconPath,

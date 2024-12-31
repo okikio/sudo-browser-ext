@@ -32,7 +32,7 @@ export default function PermissionRequest() {
           We need some <br /> browser permissions
         </h1>
         <p className="text-color paragraph">
-          We don&apos;t like it either, but the sudo-flix extension needs quite a few permissions to function. Listed
+          We don&apos;t like it either, but the P-Stream extension needs quite a few permissions to function. Listed
           below is an explanation for all permissions we need.
         </p>
 
@@ -66,8 +66,8 @@ export default function PermissionRequest() {
             <h3>Network Requests</h3>
             <p className="text-color paragraph">
               This permission allows the extension to instruct the browser how to request data from sites. In more
-              technical terms, this allows sudo-flix to modify HTTP headers that it wouldn&apos;t normally be allowed
-              to.
+              technical terms, this allows P-Stream, movie-web, sudo-flix, watch.lonelil.ru, etc to modify HTTP headers
+              that it wouldn&apos;t normally be allowed to.
             </p>
             <p className="text-color paragraph">
               You won&apos;t be prompted for this permission, it&apos;s included in “Read & change data from all sites”.
@@ -76,8 +76,7 @@ export default function PermissionRequest() {
           <Card icon={<Icon name="cookie" />}>
             <h3>Read and write cookies</h3>
             <p className="text-color paragraph">
-              Some sources use cookies for authentication. We need to be able to read and set those cookies. The
-              extension will only be able to accees the cookies for a few sites we scrape.
+              Some sources use cookies for authentication. We need to be able to read and set those cookies.
             </p>
             <p className="text-color paragraph">
               You won&apos;t be prompted for this permission, it&apos;s included in “Read & change data from all sites”.

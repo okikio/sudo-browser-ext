@@ -1,9 +1,9 @@
 {
   "name": "@movie-web/extension",
-  "displayName": "sudo-flix extension",
-  "version": "1.2.0",
+  "displayName": "P-Stream extension",
+  "version": "1.3.1",
   "description": "Enhance your streaming experience with just one click",
-  "author": "sudo-flix",
+  "author": "P-Stream",
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
@@ -18,7 +18,7 @@
   "dependencies": {
     "@plasmohq/messaging": "^0.6.2",
     "@plasmohq/storage": "^1.11.0",
-    "plasmo": "0.84.0",
+    "plasmo": "0.89.4",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
@@ -61,8 +61,8 @@
     "web_accessible_resources": [
       {
         "resources": [
-          "assets/active.png",
-          "assets/inactive.png"
+          "src/assets/active.png",
+          "src/assets/inactive.png"
         ],
         "matches": [
           "<all_urls>"

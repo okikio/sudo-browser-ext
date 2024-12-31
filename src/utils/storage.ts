@@ -3,7 +3,7 @@ import { useStorage } from '@plasmohq/storage/hook';
 
 import { makeUrlIntoDomain } from '~utils/domains';
 
-export const DEFAULT_DOMAIN_WHITELIST = [];
+export const DEFAULT_DOMAIN_WHITELIST = ['pstream.org'];
 
 export const modifiableResponseHeaders = [
   'access-control-allow-origin',
