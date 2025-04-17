@@ -2,14 +2,14 @@
   font-family: "Inter";
   font-style: normal;
   font-weight: 400;
-  src: url(data-base64:~assets/inter/regular.ttf);
+  src: url(data-base64:../assets/inter/regular.ttf);
 }
 
 @font-face {
   font-family: "Inter";
   font-style: bold;
   font-weight: 700;
-  src: url(data-base64:~assets/inter/bold.ttf);
+  src: url(data-base64:../assets/inter/bold.ttf);
 }
 
 body, html {

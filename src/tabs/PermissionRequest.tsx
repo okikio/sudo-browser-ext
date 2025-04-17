@@ -41,7 +41,7 @@ export default function PermissionRequest() {
             purple
             icon={<Icon name="github" />}
             right={
-              <Button type="secondary" href="https://github.com/sussy-code/browser-ext">
+              <Button type="secondary" href="https://github.com/p-stream/extension">
                 Read source code
               </Button>
             }

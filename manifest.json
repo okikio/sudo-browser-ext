@@ -8,7 +8,7 @@
   "web_accessible_resources": [
     {
       "matches": ["\u003Call_urls>"],
-      "resources": ["src/assets/active.png", "src/assets/inactive.png"]
+      "resources": ["assets/active.png", "assets/inactive.png"]
     }
   ]
 }
