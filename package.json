@@ -1,7 +1,7 @@
 {
-  "name": "@movie-web/extension",
+  "name": "@p-stream/extension",
   "displayName": "P-Stream extension",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Enhance your streaming experience with just one click",
   "author": "P-Stream",
   "scripts": {
@@ -20,7 +20,8 @@
     "@plasmohq/storage": "^1.11.0",
     "plasmo": "0.89.4",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "sharp": "^0.34.3"
   },
   "devDependencies": {
     "@types/chrome": "0.0.251",
@@ -52,10 +53,10 @@
     ],
     "browser_specific_settings": {
       "gecko": {
-        "id": "{0c3fcdbd-5e0f-40d5-8f6c-d5eef8ff2b7c}"
+        "id": "{de055456-589b-45fe-8342-c685a7ffb424}"
       },
       "gecko_android": {
-        "id": "{0c3fcdbd-5e0f-40d5-8f6c-d5eef8ff2b7c}"
+        "id": "{de055456-589b-45fe-8342-c685a7ffb424}"
       }
     },
     "web_accessible_resources": [
