@@ -8,7 +8,7 @@ export function BottomLabel() {
     <h3 className="bottom-label">
       {version}
       <div className="dot" />
-      sudo-flix
+      P-Stream
     </h3>
   );
 }
