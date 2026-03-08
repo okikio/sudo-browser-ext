@@ -19,7 +19,7 @@ jobs:
       - uses: pnpm/action-setup@v4
 
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: 'pnpm'
@@ -40,13 +40,13 @@ jobs:
         run: pnpm run package:firefox
 
       - name: Upload chrome package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chrome
           path: ./build/chrome-mv3-prod.zip
 
       - name: Upload firefox package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: firefox
           path: ./build/firefox-mv3-prod.zip
@@ -63,13 +63,13 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Download Chrome artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: chrome
           path: ./chrome
 
       - name: Download Firefox artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: firefox
           path: ./firefox
