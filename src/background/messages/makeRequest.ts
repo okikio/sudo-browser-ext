@@ -1,10 +1,12 @@
 import type { PlasmoMessaging } from '@plasmohq/messaging';
 
+import { hasDomainPermission } from '~hooks/usePermission';
 import type { BaseRequest } from '~types/request';
 import type { BaseResponse } from '~types/response';
 import { removeDynamicRules, setDynamicRules } from '~utils/declarativeNetRequest';
 import { isFirefox } from '~utils/extension';
 import { makeFullUrl } from '~utils/fetcher';
+import { openSourcePermissionTab } from '~utils/permissionTracker';
 import { assertDomainWhitelist, canAccessCookies } from '~utils/storage';
 
 const MAKE_REQUEST_DYNAMIC_RULE = 23498;
@@ -20,7 +22,7 @@ export interface Request extends BaseRequest {
   bodyType?: 'string' | 'FormData' | 'URLSearchParams' | 'object';
 }
 
-type Response<T> = BaseResponse<{
+type ProxiedResponse<T> = BaseResponse<{
   response: {
     statusCode: number;
     headers: Record<string, string>;
@@ -48,7 +50,7 @@ const mapBodyToFetchBody = (body: Request['body'], bodyType: Request['bodyType']
   return body;
 };
 
-const handler: PlasmoMessaging.MessageHandler<Request, Response<any>> = async (req, res) => {
+const handler: PlasmoMessaging.MessageHandler<Request, ProxiedResponse<any>> = async (req, res) => {
   try {
     if (!req.sender?.tab?.url) throw new Error('No tab URL found in the request.');
     if (!req.body) throw new Error('No request body found in the request.');
@@ -56,13 +58,25 @@ const handler: PlasmoMessaging.MessageHandler<Request, Response<any>> = async (r
     const url = makeFullUrl(req.body.url, req.body);
     await assertDomainWhitelist(req.sender.tab.url);
 
+    // Ensure the extension has per-domain permission for the source before
+    // setting DNR rules (which require host permissions to modify headers).
+    const targetDomain = new URL(url).hostname;
+    if (!(await hasDomainPermission(targetDomain))) {
+      await openSourcePermissionTab(targetDomain);
+      res.send({
+        success: false,
+        error: `Permission required for source domain "${targetDomain}". Please approve in the new tab and retry.`,
+      });
+      return;
+    }
+
     await setDynamicRules({
       ruleId: MAKE_REQUEST_DYNAMIC_RULE,
-      targetDomains: [new URL(url).hostname],
+      targetDomains: [targetDomain],
       requestHeaders: req.body.headers,
       // set Access-Control-Allow-Credentials if the reqested host has access to cookies
       responseHeaders: {
-        ...(canAccessCookies(new URL(url).hostname) && {
+        ...(canAccessCookies(targetDomain) && {
           'Access-Control-Allow-Credentials': 'true',
         }),
       },
@@ -91,7 +105,7 @@ const handler: PlasmoMessaging.MessageHandler<Request, Response<any>> = async (r
         headers: {
           ...Object.fromEntries(response.headers.entries()),
           // include cookies if allowed for the reqested host
-          ...(canAccessCookies(new URL(url).hostname) && {
+          ...(canAccessCookies(targetDomain) && {
             'Set-Cookie': cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join(', '),
           }),
         },

@@ -6,7 +6,7 @@ import { useDomainWhitelist } from './useDomainWhitelist';
  * Build the pair of origin patterns for a given host, e.g.
  *   "example.com" → ["https://example.com/*", "http://example.com/*"]
  */
-function domainToOrigins(domain: string): string[] {
+export function domainToOrigins(domain: string): string[] {
   return [`https://${domain}/*`, `http://${domain}/*`];
 }
 
@@ -38,6 +38,15 @@ export async function hasDomainPermission(domain: string): Promise<boolean> {
     chrome.permissions.contains({ origins: domainToOrigins(domain) }),
   ]);
   return hasAll || hasDomain;
+}
+
+/**
+ * Grant browser-level permission for a SOURCE domain only — does NOT add the
+ * domain to the hosting-site whitelist.  Used when the background needs to
+ * proxy requests to a streaming provider that the user hasn't yet approved.
+ */
+export async function grantSourcePermission(domain: string): Promise<boolean> {
+  return chrome.permissions.request({ origins: domainToOrigins(domain) });
 }
 
 export function usePermission() {
