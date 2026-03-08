@@ -21,7 +21,7 @@ jobs:
       - uses: pnpm/action-setup@v4
 
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: "pnpm"
@@ -45,7 +45,7 @@ jobs:
       - uses: pnpm/action-setup@v4
 
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: "pnpm"
@@ -73,7 +73,7 @@ jobs:
 
       - name: Upload screenshots on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-screenshots
           path: tests/screenshots/
