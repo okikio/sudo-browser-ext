@@ -11,7 +11,7 @@ export function BottomLabel() {
       P-Stream
       <div className="dot" />
       <a href="https://github.com/p-stream/extension" target="_blank" rel="noopener noreferrer" className="github-link">
-        Github ↗
+        GitHub ↗
       </a>
     </h3>
   );
