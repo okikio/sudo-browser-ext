@@ -33,9 +33,23 @@ export function useToggleWhitelistDomain(domain: string | null) {
     path: iconPath,
   });
 
-  const toggle = useCallback(() => {
+  /**
+   * Toggle the domain whitelist state.
+   *
+   * When enabling a domain the extension also requests browser-level host
+   * permission for that specific domain (MALSync-style per-domain grant).
+   * The domain is only added to the whitelist if the user actually grants
+   * the permission prompt.  Disabling a domain only removes it from the
+   * whitelist; the browser permission is kept so the user can re-enable
+   * without another prompt.
+   */
+  const toggle = useCallback(async () => {
     if (!isWhitelisted) {
-      addDomain(domain);
+      if (domain) {
+        await grantPermission(domain);
+      } else {
+        addDomain(domain);
+      }
       return;
     }
 
