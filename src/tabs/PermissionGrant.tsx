@@ -1,15 +1,83 @@
+import { useCallback, useState } from 'react';
+
 import { Button } from '~components/Button';
-import { usePermission } from '~hooks/usePermission';
+import { grantSourcePermission, usePermission } from '~hooks/usePermission';
 import { makeUrlIntoDomain } from '~utils/domains';
 
 import './PermissionGrant.css';
 
+/**
+ * PermissionGrant handles two distinct flows:
+ *
+ * 1. SITE grant  (?redirectUrl=https://pstream.example.com/...)
+ *    The movie-web page navigates here via openPage.  After granting, the user
+ *    is redirected back to the original URL.
+ *
+ * 2. SOURCE grant  (?type=source&domain=ee3.me)
+ *    The background service worker opens this in a new tab when a source domain
+ *    needs permission before the extension can set up streaming rules.
+ *    After granting (or declining) the tab simply closes.
+ */
+
+type GrantType = 'site' | 'source';
+
 export default function PermissionGrant() {
   const { grantPermission } = usePermission();
+  const [status, setStatus] = useState<'idle' | 'granted' | 'denied'>('idle');
 
   const queryParams = new URLSearchParams(window.location.search);
+  const type: GrantType = (queryParams.get('type') as GrantType | null) ?? 'site';
   const redirectUrl = queryParams.get('redirectUrl') ?? undefined;
-  const domain = redirectUrl ? makeUrlIntoDomain(redirectUrl) : undefined;
+
+  // Domain comes from ?domain= for source type, extracted from redirectUrl for site type.
+  const directDomain = queryParams.get('domain');
+  const domain: string | undefined =
+    type === 'source'
+      ? (directDomain ?? undefined)
+      : ((redirectUrl ? makeUrlIntoDomain(redirectUrl) : undefined) ?? directDomain ?? undefined);
+
+  const redirectBack = useCallback(() => {
+    if (redirectUrl) {
+      chrome.tabs.getCurrent((tab) => {
+        if (!tab?.id) return;
+        chrome.tabs.update(tab.id, { url: redirectUrl });
+      });
+    } else {
+      window.close();
+    }
+  }, [redirectUrl]);
+
+  const handleGrant = useCallback(async () => {
+    if (!domain) return;
+
+    let granted = false;
+    if (type === 'source') {
+      granted = await grantSourcePermission(domain);
+    } else {
+      granted = await grantPermission(domain);
+    }
+
+    if (granted) {
+      setStatus('granted');
+      // For source grants close the tab; for site grants redirect back.
+      if (type === 'source') {
+        setTimeout(() => window.close(), 800);
+      } else {
+        redirectBack();
+      }
+    } else {
+      setStatus('denied');
+    }
+  }, [domain, type, grantPermission, redirectBack]);
+
+  const handleDecline = useCallback(() => {
+    setStatus('denied');
+    if (type === 'source') {
+      setTimeout(() => window.close(), 800);
+    } else {
+      redirectBack();
+    }
+  }, [type, redirectBack]);
 
   if (!domain) {
     return (
@@ -26,34 +94,69 @@ export default function PermissionGrant() {
     );
   }
 
-  const redirectBack = () => {
-    chrome.tabs.getCurrent((tab) => {
-      if (!tab?.id) return;
-      chrome.tabs.update(tab.id, { url: redirectUrl });
-    });
-  };
+  if (status === 'granted') {
+    return (
+      <div className="permission-grant container">
+        <div className="inner-container">
+          <div className="permission-card">
+            <h1 className="color-white">✓ Approved</h1>
+            <p className="text-color" style={{ textAlign: 'center' }}>
+              Permission granted for <span className="color-white">{domain}</span>.
+              {type === 'source' ? ' This tab will close shortly.' : ''}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const handleGrantPermission = () => {
-    grantPermission(domain).then(() => {
-      redirectBack();
-    });
-  };
+  if (status === 'denied') {
+    return (
+      <div className="permission-grant container">
+        <div className="inner-container">
+          <div className="permission-card">
+            <h1 className="color-white">Denied</h1>
+            <p className="text-color" style={{ textAlign: 'center' }}>
+              Permission was not granted for <span className="color-white">{domain}</span>.
+              {type === 'source' ? ' This tab will close shortly.' : ''}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="permission-grant container">
       <div className="inner-container">
         <div className="permission-card">
-          <h1 className="color-white">Permission</h1>
-          <p className="text-color" style={{ textAlign: 'center' }}>
-            The website <span className="color-white">{domain}</span> wants to <br /> use the extension on their page.
-            Do you trust them?
-          </p>
+          {type === 'source' ? (
+            <>
+              <h1 className="color-white">Source Access Needed</h1>
+              <p className="text-color" style={{ textAlign: 'center' }}>
+                The streaming source <span className="color-white">{domain}</span> needs browser permission so the
+                extension can proxy requests and set up CORS headers for playback.
+              </p>
+              <p className="text-color" style={{ textAlign: 'center', marginTop: '0.5rem', fontSize: '0.875rem' }}>
+                The extension will only access this domain when you have the extension enabled on a movie-web or
+                P-Stream hosting site.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="color-white">Site Access</h1>
+              <p className="text-color" style={{ textAlign: 'center' }}>
+                The website <span className="color-white">{domain}</span> wants to use the extension on their page. Do
+                you trust them?
+              </p>
+            </>
+          )}
           <div className="buttons">
-            <Button full onClick={handleGrantPermission}>
-              Grant Permission
+            <Button full onClick={handleGrant}>
+              {type === 'source' ? 'Allow Source' : 'Grant Permission'}
             </Button>
-            <Button full onClick={redirectBack} type="secondary">
-              Decline
+            <Button full onClick={handleDecline} type="secondary">
+              {type === 'source' ? 'Deny' : 'Decline'}
             </Button>
           </div>
         </div>

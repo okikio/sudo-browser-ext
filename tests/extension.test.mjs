@@ -179,6 +179,8 @@ popupJs.includes('p-stream/extension') ? pass('popup-js-github-href')         : 
 popupJs.includes('bottom-label')       ? pass('popup-js-bottom-label-class')  : fail('popup-js-bottom-label-class');
 popupJs.includes('useVersion') || popupJs.includes(pkg.version)
                                        ? pass('popup-js-version-hook')        : fail('popup-js-version-hook');
+popupJs.includes('Permissions') || popupJs.includes('perm-link')
+                                       ? pass('popup-js-permissions-link')    : fail('popup-js-permissions-link');
 
 // ── 8. Background service-worker JS ──────────────────────────────────────────
 console.log('\n── Background service worker JS ─────────────');
@@ -199,6 +201,47 @@ for (const f of csFiles) {
 }
 csJs.includes('sendMessage') || csJs.includes('runtime')
   ? pass('content-script-messaging')    : fail('content-script-messaging');
+
+// ── 10. PermissionGrant — source domain flow ─────────────────────────────────
+console.log('\n── PermissionGrant (source domain) ─────────');
+const sourcePage = await openExtPage('tabs/PermissionGrant.html?type=source&domain=ee3.me', 'source-grant');
+await sourcePage.screenshot({ path: join(SS_DIR, '05-source-permission-grant.png'), fullPage: true });
+const stxt = await sourcePage.textContent('body');
+stxt.includes('ee3.me')                       ? pass('source-grant-shows-domain')    : fail('source-grant-shows-domain',   stxt.slice(0, 80));
+stxt.includes('Allow Source') ||
+  stxt.includes('Source Access')              ? pass('source-grant-ui-elements')     : fail('source-grant-ui-elements',    stxt.slice(0, 80));
+stxt.includes('Deny')                         ? pass('source-grant-deny-button')     : fail('source-grant-deny-button');
+
+// ── 11. Permissions management page ──────────────────────────────────────────
+console.log('\n── Permissions management page ──────────────');
+const permsPage = await openExtPage('tabs/Permissions.html', 'perms');
+await permsPage.screenshot({ path: join(SS_DIR, '06-permissions-page.png'), fullPage: true });
+const permTxt = await permsPage.textContent('body');
+permTxt.includes('Granted Permissions')        ? pass('perms-page-title')             : fail('perms-page-title',            permTxt.slice(0, 80));
+permTxt.includes('Hosting Sites')              ? pass('perms-page-hosting-section')   : fail('perms-page-hosting-section');
+permTxt.includes('Source Domains')             ? pass('perms-page-source-section')    : fail('perms-page-source-section');
+
+// ── 12. Popup bottom label has Permissions link ───────────────────────────────
+// Seed permSetupDone so the popup shows the toggle page (with BottomLabel).
+console.log('\n── Popup Permissions link ───────────────────');
+const popup3 = await openExtPage('popup.html', 'popup3');
+await popup3.evaluate(async () => {
+  await new Promise(r => chrome.storage.local.set({ permSetupDone: true }, r));
+});
+await popup3.reload();
+await popup3.waitForLoadState('networkidle');
+await popup3.waitForSelector('body > *', { timeout: 5000 }).catch(() => {});
+await popup3.screenshot({ path: join(SS_DIR, '07-popup-permissions-link.png'), fullPage: true });
+const p3txt = await popup3.textContent('body');
+p3txt.includes('Permissions')                  ? pass('popup-has-permissions-link')   : fail('popup-has-permissions-link',  p3txt.slice(0, 80));
+
+// ── 13. Background JS has source permission checks ────────────────────────────
+console.log('\n── Background source permission checks ──────');
+bgJs.includes('hasDomainPermission')           ? pass('bg-source-perm-check')         : fail('bg-source-perm-check');
+bgJs.includes('openSourcePermissionTab') ||
+  bgJs.includes('PermissionGrant')             ? pass('bg-opens-perm-tab')            : fail('bg-opens-perm-tab');
+bgJs.includes('wasRecentlyPrompted') ||
+  bgJs.includes('permissionTracker')           ? pass('bg-perm-rate-limiter')         : fail('bg-perm-rate-limiter');
 
 // ── 10. No JS errors ──────────────────────────────────────────────────────────
 console.log('\n── JS errors ────────────────────────────────');
