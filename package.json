@@ -13,7 +13,9 @@
     "lint": "eslint --ext .tsx,.ts src",
     "lint:fix": "eslint --fix --ext .tsx,.ts src",
     "lint:report": "eslint --ext .tsx,.ts --output-file eslint_report.json --format json src",
-    "preinstall": "npx -y only-allow pnpm"
+    "preinstall": "npx -y only-allow pnpm",
+    "test": "pnpm run build && playwright install chromium && node tests/extension.test.mjs",
+    "test:ci": "pnpm run build && playwright install chromium && xvfb-run --auto-servernum --server-args=\"-screen 0 1280x800x24\" node tests/extension.test.mjs"
   },
   "dependencies": {
     "@plasmohq/messaging": "^0.7.2",
@@ -39,6 +41,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "plasmo": "0.90.5",
+    "playwright": "1.50.1",
     "prettier": "3.6.2",
     "typescript": "5.9.3"
   },

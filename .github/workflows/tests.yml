@@ -8,16 +8,17 @@ on:
       - dev
 
 jobs:
-  testing:
-    name: Testing
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
 
       - uses: pnpm/action-setup@v4
-
 
       - name: Install Node.js
         uses: actions/setup-node@v6
@@ -30,3 +31,49 @@ jobs:
 
       - name: Run linting
         run: pnpm run lint
+
+  browser-test:
+    name: Browser Integration Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install packages
+        run: pnpm install
+
+      - name: Install system dependencies for Chromium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            xvfb \
+            libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
+            libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
+            libgbm1 libasound2t64 libpango-1.0-0 libpangocairo-1.0-0
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Build extension
+        run: pnpm run build
+
+      - name: Run browser integration tests
+        run: pnpm run test:ci
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-screenshots
+          path: tests/screenshots/
