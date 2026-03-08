@@ -65,7 +65,7 @@ COPY --from=builder /app/build ./build
 COPY --from=builder /app/package.json ./package.json
 
 # Install only a minimal static server — no build toolchain needed at runtime
-RUN npm install --global serve@14 --ignore-scripts
+RUN npm install --global serve@14.2.6 --ignore-scripts
 
 EXPOSE ${PORT}
 
