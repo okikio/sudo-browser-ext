@@ -21,7 +21,7 @@ function Card(props: { purple?: boolean; children: React.ReactNode; icon?: React
 export default function PermissionRequest() {
   const { grantPermission } = usePermission();
 
-  const grant = useCallback(() => {
+  const acknowledge = useCallback(() => {
     grantPermission().then(() => window.close());
   }, [grantPermission]);
 
@@ -32,8 +32,9 @@ export default function PermissionRequest() {
           We need some <br /> browser permissions
         </h1>
         <p className="text-color paragraph">
-          We don&apos;t like it either, but the P-Stream extension needs quite a few permissions to function. Listed
-          below is an explanation for all permissions we need.
+          We don&apos;t like it either, but the P-Stream extension needs a few permissions to function. Rather than
+          asking for access to every website at once, the extension will ask you individually when it needs access to a
+          new domain. Listed below is an explanation for all permissions involved.
         </p>
 
         <div className="card-list" style={{ marginTop: '2.5rem' }}>
@@ -56,10 +57,10 @@ export default function PermissionRequest() {
         <h2>Permission list</h2>
         <div className="card-list">
           <Card icon={<Icon name="windows" />}>
-            <h3>Read & change data from all sites</h3>
+            <h3>Per-site access (asked individually)</h3>
             <p className="text-color paragraph">
-              This is so the extension can gather content from the sources. We need to be able to reach those sources.
-              Unfortunately that requires us to request the permissions from all sites.
+              Instead of requesting access to every website at once, the extension will prompt you each time it needs
+              access to a new domain. You stay in control &mdash; grant access only to the sites you trust.
             </p>
           </Card>
           <Card icon={<Icon name="network" />}>
@@ -70,7 +71,7 @@ export default function PermissionRequest() {
               that it wouldn&apos;t normally be allowed to.
             </p>
             <p className="text-color paragraph">
-              You won&apos;t be prompted for this permission, it&apos;s included in “Read & change data from all sites”.
+              You won&apos;t be prompted for this permission, it&apos;s included in the per-site access grant.
             </p>
           </Card>
           <Card icon={<Icon name="cookie" />}>
@@ -79,7 +80,7 @@ export default function PermissionRequest() {
               Some sources use cookies for authentication. We need to be able to read and set those cookies.
             </p>
             <p className="text-color paragraph">
-              You won&apos;t be prompted for this permission, it&apos;s included in “Read & change data from all sites”.
+              You won&apos;t be prompted for this permission, it&apos;s included in the per-site access grant.
             </p>
           </Card>
           <Card icon={<Icon name="shield" />}>
@@ -96,8 +97,8 @@ export default function PermissionRequest() {
 
         <div className="footer">
           <div style={{ width: '250px' }}>
-            <Button full onClick={grant}>
-              Grant Permission
+            <Button full onClick={acknowledge}>
+              Got it!
             </Button>
           </div>
         </div>

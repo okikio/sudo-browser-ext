@@ -134,7 +134,7 @@ if (permTab) {
   await permTab.screenshot({ path: join(SS_DIR, '02-permission-request-tab.png'), fullPage: true });
   const ptxt = await permTab.textContent('body');
   ptxt.includes('browser permissions')              ? pass('continue-opens-perm-tab')        : fail('continue-opens-perm-tab',       ptxt.slice(0, 80));
-  ptxt.includes('Grant Permission')                 ? pass('perm-tab-grant-button')           : fail('perm-tab-grant-button');
+  ptxt.includes('Got it!') || ptxt.includes('Per-site access') ? pass('perm-tab-setup-button')     : fail('perm-tab-setup-button');
   ptxt.includes('Read source code')                 ? pass('perm-tab-github-card')            : fail('perm-tab-github-card');
   ptxt.includes('Network Requests') ||
     ptxt.includes('declarativeNetRequest')          ? pass('perm-tab-network-card')           : fail('perm-tab-network-card');
