@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 
 import { Button } from '~components/Button';
 import { grantSourcePermission, usePermission } from '~hooks/usePermission';
-import { makeUrlIntoDomain } from '~utils/domains';
+import { isValidHostname, makeUrlIntoDomain } from '~utils/domains';
 
 import './PermissionGrant.css';
 
@@ -30,11 +30,20 @@ export default function PermissionGrant() {
   const redirectUrl = queryParams.get('redirectUrl') ?? undefined;
 
   // Domain comes from ?domain= for source type, extracted from redirectUrl for site type.
-  const directDomain = queryParams.get('domain');
-  const domain: string | undefined =
-    type === 'source'
-      ? (directDomain ?? undefined)
-      : ((redirectUrl ? makeUrlIntoDomain(redirectUrl) : undefined) ?? directDomain ?? undefined);
+  // Validate and normalise to a bare hostname to prevent crafted query-param values
+  // from generating overly broad or invalid permission patterns.
+  const rawDomain = queryParams.get('domain');
+  const normalizedDomain: string | undefined = (() => {
+    const candidate =
+      type === 'source'
+        ? (rawDomain ?? undefined)
+        : ((redirectUrl ? makeUrlIntoDomain(redirectUrl) : undefined) ?? rawDomain ?? undefined);
+    if (!candidate) return undefined;
+    // Accept only bare hostnames (with optional port); reject URLs, wildcards, paths.
+    if (!isValidHostname(candidate)) return undefined;
+    return candidate;
+  })();
+  const domain = normalizedDomain;
 
   const redirectBack = useCallback(() => {
     if (redirectUrl) {
@@ -68,7 +77,7 @@ export default function PermissionGrant() {
     } else {
       setStatus('denied');
     }
-  }, [domain, type, grantPermission, redirectBack]);
+  }, [domain, type, grantSourcePermission, grantPermission, redirectBack]);
 
   const handleDecline = useCallback(() => {
     setStatus('denied');

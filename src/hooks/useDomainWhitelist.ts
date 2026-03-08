@@ -24,7 +24,7 @@ export function useDomainWhitelist() {
 }
 
 export function useToggleWhitelistDomain(domain: string | null) {
-  const { domainWhitelist, addDomain, removeDomain } = useDomainWhitelist();
+  const { domainWhitelist, removeDomain } = useDomainWhitelist();
   const isWhitelisted = domainWhitelist.includes(domain ?? '');
   const { grantPermission } = usePermission();
   const iconPath = (chrome || browser).runtime.getURL(isWhitelisted ? 'assets/active.png' : 'assets/inactive.png');
@@ -42,19 +42,20 @@ export function useToggleWhitelistDomain(domain: string | null) {
    * the permission prompt.  Disabling a domain only removes it from the
    * whitelist; the browser permission is kept so the user can re-enable
    * without another prompt.
+   *
+   * Returns immediately (no-op) when `domain` is null/empty to avoid silently
+   * appearing to succeed without performing any action.
    */
   const toggle = useCallback(async () => {
+    if (!domain) return;
+
     if (!isWhitelisted) {
-      if (domain) {
-        await grantPermission(domain);
-      } else {
-        addDomain(domain);
-      }
+      await grantPermission(domain);
       return;
     }
 
     removeDomain(domain);
-  }, [isWhitelisted, domain, addDomain, removeDomain, grantPermission]);
+  }, [isWhitelisted, domain, removeDomain, grantPermission]);
 
   return {
     toggle,

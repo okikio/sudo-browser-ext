@@ -25,9 +25,10 @@
  */
 
 import { chromium } from 'playwright';
-import { readFileSync, mkdirSync } from 'fs';
+import { readFileSync, mkdirSync, mkdtempSync, rmSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { tmpdir } from 'os';
 
 const ROOT       = join(dirname(fileURLToPath(import.meta.url)), '..');
 const EXT_PATH   = join(ROOT, 'build', 'chrome-mv3-prod');
@@ -46,9 +47,12 @@ function fail(name, detail = '') {
   console.log(`  ❌  ${name}${detail ? ' (' + detail + ')' : ''}`);
 }
 
+// Create a dedicated temporary user-data directory so we never pollute the repo.
+const userDataDir = mkdtempSync(join(tmpdir(), 'playwright-ext-'));
+
 // ── Launch Chrome with the unpacked extension ─────────────────────────────────
 // Extensions require a headed context; use xvfb-run in CI (see CI workflow).
-const ctx = await chromium.launchPersistentContext('', {
+const ctx = await chromium.launchPersistentContext(userDataDir, {
   headless: false,
   args: [
     `--disable-extensions-except=${EXT_PATH}`,
@@ -262,4 +266,6 @@ console.log('══════════════════════�
 if (jsErrors.length) { console.log('JS errors:\n'); jsErrors.forEach(e => console.log('  ', e)); }
 
 await ctx.close();
+// Clean up the temporary profile directory.
+try { rmSync(userDataDir, { recursive: true, force: true }); } catch { /* ignore */ }
 process.exit(passed === total ? 0 : 1);

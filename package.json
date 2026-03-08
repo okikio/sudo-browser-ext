@@ -9,13 +9,13 @@
     "build": "plasmo build",
     "build:firefox": "plasmo build --target=firefox-mv3",
     "package": "plasmo package",
-    "package:firefox": "npm run build:firefox && plasmo package --target=firefox-mv3 && mv build/firefox-mv3-prod.zip build/firefox-mv3-prod.xpi",
+    "package:firefox": "plasmo package --target=firefox-mv3",
     "lint": "eslint --ext .tsx,.ts src",
     "lint:fix": "eslint --fix --ext .tsx,.ts src",
     "lint:report": "eslint --ext .tsx,.ts --output-file eslint_report.json --format json src",
     "preinstall": "npx -y only-allow pnpm",
     "test": "pnpm run build && playwright install chromium && node tests/extension.test.mjs",
-    "test:ci": "pnpm run build && playwright install chromium && xvfb-run --auto-servernum --server-args=\"-screen 0 1280x800x24\" node tests/extension.test.mjs"
+    "test:ci": "xvfb-run --auto-servernum --server-args=\"-screen 0 1280x800x24\" node tests/extension.test.mjs"
   },
   "dependencies": {
     "@plasmohq/messaging": "^0.7.2",

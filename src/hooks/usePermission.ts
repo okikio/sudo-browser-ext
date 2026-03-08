@@ -1,12 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { isValidHostname } from '~utils/domains';
+
 import { useDomainWhitelist } from './useDomainWhitelist';
 
 /**
  * Build the pair of origin patterns for a given host, e.g.
  *   "example.com" → ["https://example.com/*", "http://example.com/*"]
+ *
+ * Returns an empty array when `domain` is not a valid hostname (e.g. contains
+ * wildcards, path components, or a full URL) so that callers can detect and
+ * reject invalid input before requesting host permissions.
  */
 export function domainToOrigins(domain: string): string[] {
+  if (!isValidHostname(domain)) {
+    return [];
+  }
   return [`https://${domain}/*`, `http://${domain}/*`];
 }
 
@@ -46,7 +55,9 @@ export async function hasDomainPermission(domain: string): Promise<boolean> {
  * proxy requests to a streaming provider that the user hasn't yet approved.
  */
 export async function grantSourcePermission(domain: string): Promise<boolean> {
-  return chrome.permissions.request({ origins: domainToOrigins(domain) });
+  const origins = domainToOrigins(domain);
+  if (origins.length === 0) return false;
+  return chrome.permissions.request({ origins });
 }
 
 export function usePermission() {
@@ -64,7 +75,9 @@ export function usePermission() {
   const grantPermission = useCallback(
     async (domain?: string) => {
       if (domain) {
-        const granted = await chrome.permissions.request({ origins: domainToOrigins(domain) });
+        const origins = domainToOrigins(domain);
+        if (origins.length === 0) return false;
+        const granted = await chrome.permissions.request({ origins });
         if (granted) {
           addDomain(domain);
           setPermission(true);
