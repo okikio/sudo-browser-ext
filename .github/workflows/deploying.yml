@@ -88,4 +88,4 @@ jobs:
           files: |
             ./chrome/chrome-mv3-prod.zip
             ./firefox/firefox-mv3-prod.zip
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
