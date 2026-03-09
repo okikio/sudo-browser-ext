@@ -5,10 +5,12 @@ on:
     branches:
       - master
     tags:
-      - '*'
+      - 'v*'
   pull_request:
     branches:
       - master
+  release:
+    types: [published]
 
 env:
   REGISTRY: ghcr.io
@@ -30,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx (OCI + multi-platform support)
         uses: docker/setup-buildx-action@v4
@@ -70,8 +72,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BUILD_TARGET=${{ matrix.target }}
-          # OCI image format (default with buildx)
-          outputs: type=image,oci-mediatypes=true
           # Layer cache for faster builds
           cache-from: type=gha,scope=${{ matrix.target }}
           cache-to: type=gha,mode=max,scope=${{ matrix.target }}
