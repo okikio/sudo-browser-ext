@@ -70,11 +70,11 @@ docker pull ghcr.io/okikio/sudo-browser-ext:latest-chrome
 docker pull ghcr.io/okikio/sudo-browser-ext:latest-firefox
 ```
 
-Version-pinned images are also available:
+Version-pinned images are also available (replace `<version>` with the desired release tag, e.g. `1.3.7`):
 
 ```sh
-docker pull ghcr.io/okikio/sudo-browser-ext:1.3.7-chrome
-docker pull ghcr.io/okikio/sudo-browser-ext:1.3.7-firefox
+docker pull ghcr.io/okikio/sudo-browser-ext:<version>-chrome
+docker pull ghcr.io/okikio/sudo-browser-ext:<version>-firefox
 ```
 
 ### Run the image
@@ -84,7 +84,7 @@ docker pull ghcr.io/okikio/sudo-browser-ext:1.3.7-firefox
 docker run -p 3000:3000 ghcr.io/okikio/sudo-browser-ext:latest-chrome
 
 # Serve Firefox extension artifacts on a custom port
-docker run -e PORT=8080 -p 8080:8080 ghcr.io/okikio/sudo-browser-ext:latest-firefox
+docker run -e BUILD_TARGET=firefox -e PORT=8080 -p 8080:8080 ghcr.io/okikio/sudo-browser-ext:latest-firefox
 ```
 
 The server responds to all requests with a 200 (it serves as a static file host for the unpacked extension). Use `BUILD_TARGET=firefox` or `BUILD_TARGET=chrome` to control which artifact directory is served when using a generic image tag.
