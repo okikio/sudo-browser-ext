@@ -52,7 +52,78 @@ pnpm dev
 ```sh
 pnpm i
 pnpm build
-or
+# or for Firefox
 pnpm build:firefox
+```
+
+## Docker
+
+A pre-built Docker image is published to the GitHub Container Registry (GHCR) on every release. It bundles the built extension artifacts and serves them over HTTP using [`serve`](https://github.com/vercel/serve).
+
+### Pull the image
+
+```sh
+# Chrome build (default)
+docker pull ghcr.io/okikio/sudo-browser-ext:latest-chrome
+
+# Firefox build
+docker pull ghcr.io/okikio/sudo-browser-ext:latest-firefox
+```
+
+Version-pinned images are also available:
+
+```sh
+docker pull ghcr.io/okikio/sudo-browser-ext:1.3.7-chrome
+docker pull ghcr.io/okikio/sudo-browser-ext:1.3.7-firefox
+```
+
+### Run the image
+
+```sh
+# Serve Chrome extension artifacts on port 3000 (default)
+docker run -p 3000:3000 ghcr.io/okikio/sudo-browser-ext:latest-chrome
+
+# Serve Firefox extension artifacts on a custom port
+docker run -e PORT=8080 -p 8080:8080 ghcr.io/okikio/sudo-browser-ext:latest-firefox
+```
+
+The server responds to all requests with a 200 (it serves as a static file host for the unpacked extension). Use `BUILD_TARGET=firefox` or `BUILD_TARGET=chrome` to control which artifact directory is served when using a generic image tag.
+
+### Build locally with Docker
+
+```sh
+# Chrome
+docker build --build-arg BUILD_TARGET=chrome -t p-stream-ext:chrome .
+
+# Firefox
+docker build --build-arg BUILD_TARGET=firefox -t p-stream-ext:firefox .
+```
+
+## GitHub Releases
+
+Releases are created automatically when code is merged to the `master` branch. Each release includes:
+
+- `chrome-mv3-prod.zip` — the packaged Chrome extension
+- `firefox-mv3-prod.zip` — the packaged Firefox extension
+
+You can download the latest release from the [Releases page](https://github.com/okikio/sudo-browser-ext/releases).
+
+## CI / CD
+
+| Workflow | Trigger | Description |
+|---|---|---|
+| **Testing** | `pull_request`, push to `master`/`dev` | Lints source files and runs Playwright browser integration tests |
+| **Deploying** | Push to `master` | Builds both browser targets, then creates a versioned GitHub Release with the zip artifacts |
+| **Docker** | Push to `master`, `v*` tags, `release: published`, `pull_request` | Builds and pushes the Docker image to GHCR (`ghcr.io/okikio/sudo-browser-ext`) |
+| **Submit to Web Store** | Manual (`workflow_dispatch`) | Packages the Chrome extension and submits it to the Chrome Web Store |
+
+### Release flow
+
+```
+push to master
+  └─► Testing    — lint + browser tests
+  └─► Deploying  — build → create GitHub Release (tag: v<version>)
+                              └─► Docker  — build & push versioned image to GHCR
+  └─► Docker     — build & push `latest` image to GHCR
 ```
 
